@@ -15,7 +15,7 @@ class _NavBarState extends State<NavBar> {
   static const List<Widget> _widgetOptions = <Widget>[
     HomePage(),
     Profile(),
-    HomePage(),
+    Profile(),
   ];
 
   @override

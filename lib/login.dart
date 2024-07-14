@@ -1,4 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:tech/FirebaseService.dart';
+import 'package:tech/tost.dart';
+import 'package:tech/userModel.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -8,20 +12,34 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final FirebaseAuthService _auth = FirebaseAuthService();
+
+  bool isLoading = false;
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
   //make login fuction
-  void login() {
-    final String email = _emailController.text;
-    final String password = _passwordController.text;
-    print("ffffffffffffffffffffffffffffffffffff");
-    print("Email: $email");
-    print("Password: $password");
+  void login() async {
+    setState(() {
+      isLoading = true;
+    });
+    User? user = (await _auth.signInWithEmailAndPassword(
+      _emailController.text,
+      _passwordController.text,
+    ));
 
-    Navigator.pushNamed(context, "/home");
+    setState(() {
+      isLoading = false;
+    });
+
+    if (user != null) {
+      Navigator.pushNamed(context, "/home");
+    } else {
+      print("faild");
+    }
   }
 
   @override
@@ -124,22 +142,20 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         onPressed: () {
-                          // if (_formKey.currentState!.validate()) {
-                          //   login();
-                          // }
-
                           if (_formKey.currentState!.validate()) {
                             login();
                           }
                         },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator()
+                            : const Text(
+                                "Login",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                   ),

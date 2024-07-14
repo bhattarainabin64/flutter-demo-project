@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1042776281580",
+    "project_id": "flutter-firebase-texas",
+    "storage_bucket": "flutter-firebase-texas.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1042776281580:android:ca7c6af41fe961d341f0c9",
+        "android_client_info": {
+          "package_name": "com.example.tech"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZeRMRp6qktqzYtYv5DEYgKdx7AwlYHXg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:tech/FirebaseService.dart';
+import 'package:tech/tost.dart';
+import 'package:tech/userModel.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -8,6 +11,10 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  bool isSigningUp = false;
+
+  final FirebaseAuthService _auth = FirebaseAuthService();
+
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -16,13 +23,27 @@ class _RegisterPageState extends State<RegisterPage> {
       TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void register() {
-    final String fullName = _fullNameController.text;
-    final String email = _emailController.text;
-    final String phone = _phoneController.text;
-    final String password = _passwordController.text;
-    final String confirmPassword = _confirmPasswordController.text;
-    // Implement registration logic here
+  void register() async {
+    setState(() {
+      isSigningUp = true;
+    });
+
+    UserModel? user = await _auth.signUpWithEmailAndPassword(
+        _fullNameController.text.trim(),
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        _passwordController.text.trim());
+
+    setState(() {
+      isSigningUp = false;
+    });
+
+    if (user != null) {
+      showToast(message: "Registration successful");
+      Navigator.pushNamed(context, "/login");
+    } else {
+      print("faild");
+    }
   }
 
   @override
@@ -67,66 +88,36 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                     ),
                   ),
-                  _buildInputFrom(
+                  _buildInputForm(
                     _emailController,
                     "Email",
                     "Enter your email",
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: TextFormField(
-                      controller: _phoneController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Phone",
-                        hintText: "Enter your phone number",
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter Phone';
-                        }
-                        return null;
-                      },
-                    ),
+                  _buildInputForm(
+                    _phoneController,
+                    "Phone",
+                    "Enter your phone number",
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: TextFormField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Password",
-                        hintText: "Enter your password",
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter Password';
-                        }
-                        return null;
-                      },
-                    ),
+                  _buildInputForm(
+                    _passwordController,
+                    "Password",
+                    "Enter your password",
+                    obscureText: true,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: TextFormField(
-                      controller: _confirmPasswordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Confirm Password",
-                        hintText: "Confirm your password",
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
-                        }
-                        if (value != _passwordController.text) {
-                          return 'Passwords do not match';
-                        }
-                        return null;
-                      },
-                    ),
+                  _buildInputForm(
+                    _confirmPasswordController,
+                    "Confirm Password",
+                    "Confirm your password",
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please confirm your password';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Passwords do not match';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -145,14 +136,16 @@ class _RegisterPageState extends State<RegisterPage> {
                           register();
                         }
                       },
-                      child: const Text(
-                        "Register",
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: isSigningUp
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              "Register",
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                   Padding(
@@ -168,14 +161,15 @@ class _RegisterPageState extends State<RegisterPage> {
                         const SizedBox(width: 5),
                         GestureDetector(
                           onTap: () {
-                            Navigator.pop(context);
+                            Navigator.pushNamed(context, "/login");
                           },
                           child: const Text(
                             "Login",
                             style: TextStyle(
-                                color: Colors.green,
-                                decoration: TextDecoration.underline,
-                                fontWeight: FontWeight.bold),
+                              color: Colors.green,
+                              decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -190,20 +184,30 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Padding _buildInputFrom(
-      TextEditingController controller, String label, String hint) {
+  Padding _buildInputForm(
+    TextEditingController controller,
+    String label,
+    String hint, {
+    bool obscureText = false,
+    String? Function(String?)? validator,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: TextFormField(
-        controller: _emailController,
+        controller: controller,
+        obscureText: obscureText,
         decoration: InputDecoration(
-            border: OutlineInputBorder(), labelText: label, hintText: hint),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter ${label}';
-          }
-          return null;
-        },
+          border: OutlineInputBorder(),
+          labelText: label,
+          hintText: hint,
+        ),
+        validator: validator ??
+            (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter $label';
+              }
+              return null;
+            },
       ),
     );
   }
